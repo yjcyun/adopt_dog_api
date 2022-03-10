@@ -1,19 +1,37 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+} from '@nestjs/common';
+import { DogsService } from './dogs.service';
 
 import { CreateDogDto } from './dtos/create-dog.dto';
 
 @Controller('dogs')
 export class DogsController {
+  constructor(public dogsService: DogsService) {}
+
   @Get()
-  listDogs() {}
+  listDogs() {
+    return this.dogsService.findAll();
+  }
 
   @Post()
   createDog(@Body() body: CreateDogDto) {
-    console.log(body);
+    return this.dogsService.create(body.name);
   }
 
   @Get('/:id')
-  getDog(@Param('id') id: string) {
-    console.log(id);
+  async getDog(@Param('id') id: string) {
+    const dog = await this.dogsService.findOne(id);
+
+    if (!dog) {
+      throw new NotFoundException('dog not found');
+    }
+
+    return dog;
   }
 }
